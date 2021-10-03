@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="server.mapper.StudentMapper">
+    
+    <select id="getStudentList" resultType="server.sql.Student" >
+        select * from class
+    </select>
+    
+    <select id="getStudentById" parameterType="int" resultType="server.sql.Student">
+        select * from class where studentId = #{studentId}
+    </select>
+
+    <update id="changeStudentStatus" parameterType="server.sql.Student">
+        update class set status=#{status} where studentId = #{studentId}
+    </update>
+
+    <update id="changeStudentPassword" parameterType="server.sql.Student">
+        update class set password=#{password} where studentId = #{studentId}
+    </update>
+
+</mapper>
