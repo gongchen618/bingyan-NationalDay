@@ -1,12 +1,14 @@
 package server.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import server.sql.Student;
 
 import java.util.List;
 
 public interface StudentMapper {
-    public List<Student> getStudentList();
-    Student getStudentById (int studentId);
-    int changeStudentStatus (Student student);
-    int changeStudentPassword (Student student);
+    public List<Student> getStudentList(@Param("table") String table);
+    int resetStatus(@Param("table") String table);
+    Student getStudentById (@Param("table") String table, @Param("studentId") int studentId);
+    int changeStudentStatus (@Param("table") String table, @Param("studentId") int studentId, @Param("status") String status);
+    int changeStudentPassword (@Param("table") String table, @Param("studentId") int studentId, @Param("password") String password);
 }
