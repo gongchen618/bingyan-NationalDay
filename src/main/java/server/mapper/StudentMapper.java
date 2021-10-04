@@ -11,4 +11,5 @@ public interface StudentMapper {
     Student getStudentById (@Param("table") String table, @Param("studentId") int studentId);
     int changeStudentStatus (@Param("table") String table, @Param("studentId") int studentId, @Param("status") String status);
     int changeStudentPassword (@Param("table") String table, @Param("studentId") int studentId, @Param("password") String password);
+    int setStudentPort (@Param("table") String table, @Param("studentId") int studentId, @Param("port") int port);
 }

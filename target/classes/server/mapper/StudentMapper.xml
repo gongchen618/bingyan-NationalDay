@@ -13,16 +13,20 @@
         update ${table} set status = "Absent"
     </update>
     
-    <select id="getStudentById" parameterType="int" resultType="server.sql.Student" statementType="STATEMENT">
+    <select id="getStudentById" resultType="server.sql.Student" statementType="STATEMENT">
         select * from ${table} where studentId = ${studentId}
     </select>
 
-    <update id="changeStudentStatus" parameterType="server.sql.Student" statementType="STATEMENT">
+    <update id="changeStudentStatus" statementType="STATEMENT">
         update ${table} set status=${status} where studentId = ${studentId}
     </update>
 
-    <update id="changeStudentPassword" parameterType="server.sql.Student" statementType="STATEMENT">
+    <update id="changeStudentPassword" statementType="STATEMENT">
         update ${table} set password=${password} where studentId = ${studentId}
+    </update>
+
+    <update id="setStudentPort" statementType="STATEMENT">
+        update ${table} set port=${port} where studentId = ${studentId}
     </update>
 
 </mapper>

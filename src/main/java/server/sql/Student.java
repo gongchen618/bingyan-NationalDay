@@ -7,17 +7,7 @@ public class Student {
     private String name;
     private String password;
     private String status;
-    private int seat;
-
-    public Student(){}
-
-    public Student(int studentId, String name, String password, String status, int seat) {
-        this.studentId = studentId;
-        this.name = name;
-        this.password = password;
-        this.status = status;
-        this.seat = seat;
-    }
+    private int port;
 
     public int getStudentId() {
         return studentId;
@@ -51,12 +41,21 @@ public class Student {
         this.status = status;
     }
 
-    public int getSeat() {
-        return seat;
+    public int getPort() {
+        return port;
     }
 
-    public void setSeat(int seat) {
-        this.seat = seat;
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public Student() {}
+    public Student(int studentId, String name, String password, String status, int port) {
+        this.studentId = studentId;
+        this.name = name;
+        this.password = password;
+        this.status = status;
+        this.port = port;
     }
 
     @Override
@@ -66,7 +65,7 @@ public class Student {
                 ", name='" + name + '\'' +
                 ", password='" + password + '\'' +
                 ", status='" + status + '\'' +
-                ", seat=" + seat +
+                ", port=" + port +
                 '}';
     }
 }

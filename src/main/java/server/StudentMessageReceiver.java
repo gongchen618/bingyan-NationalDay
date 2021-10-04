@@ -9,15 +9,14 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 
-import static server.ServerChatter.isFlagIsClassTime;
-import static server.ServerGetSql.changeStudentStatus;
-import static server.ServerGetSql.getStudentById;
+import static server.ServerCore.isFlagIsClassTime;
+import static server.ServerSqlHandler.*;
 
-public class StudentStatusHandler extends Thread{
+public class StudentMessageReceiver extends Thread{
     private Socket socket;
     private Student studentInfo = null;
 
-    StudentStatusHandler(Socket socket){
+    StudentMessageReceiver(Socket socket){
         this.socket = socket;
     }
 
@@ -51,6 +50,9 @@ public class StudentStatusHandler extends Thread{
                 } else if (studentInfo.getPassword().equals(student.getPassword())) {
                     flagConnect = true;
                     System.out.println(studentInfo.getName() + " 登录成功！");
+                    setStudentPort (studentInfo.getStudentId(), socket.getPort());
+                    studentInfo.setPort(socket.getPort());
+
                     if (isFlagIsClassTime() == true) {
                         changeStudentStatus(student.getStudentId(), "Late");
                         socketOutput.println("Login Successfully");
@@ -67,38 +69,28 @@ public class StudentStatusHandler extends Thread{
             } while (!flagConnect);
 
 
-            int num = -1;
+            String str = null;
             do {
-                num = socketInput.read();
+                str = socketInput.readLine();
+                if (str != null && str.length() > 0)
+                    System.out.println(studentInfo.getName() + " 举手提问："
+                            + str + " (port: " + studentInfo.getPort());
                 try {
                     Thread.sleep(2000);
                 } catch (Exception e){
                     e.printStackTrace();
                 }
-            } while (num > 0);
+            } while (str != null);
 
             socketInput.close();
             socketOutput.close();
-
-                /*
-                do{
-                    String str = socketInput.readLine();//客户端输入
-                    if ("bye".equalsIgnoreCase(str)) {
-                        flag = false;
-                        socketOutput.println("bye");
-                    } else {
-                        System.out.println(str);
-                        socketOutput.println("接受到文件大小：" + str.length());
-                    }
-
-                } while (flag);
-                */
 
         }catch (Exception e){
             e.printStackTrace();
             System.out.println("学生端连接异常断开："+ socket.getInetAddress() + ":" + socket.getPort());
         } finally {
             try {
+                setStudentPort (studentInfo.getStudentId(), 0);
                 socket.close();
                 System.out.println("学生端断开："+ socket.getInetAddress() + ":" + socket.getPort());
                 if (studentInfo != null) {

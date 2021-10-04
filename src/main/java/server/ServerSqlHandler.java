@@ -1,14 +1,13 @@
 package server;
 
 import org.apache.ibatis.session.SqlSession;
-import org.junit.jupiter.api.Test;
 import server.sql.MybatisUtils;
 import server.sql.Student;
 import server.mapper.StudentMapper;
 
 import java.util.List;
 
-public class ServerGetSql {
+public class ServerSqlHandler {
 
     static String classId = "class1";
 
@@ -17,10 +16,9 @@ public class ServerGetSql {
     }
 
     public static void setClassId(String classId) {
-        ServerGetSql.classId = classId;
+        ServerSqlHandler.classId = classId;
     }
 
-    @Test
     public void justTest(){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
@@ -97,7 +95,7 @@ public class ServerGetSql {
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
 
-        Student student = getStudentById(studentId);
+        Student student = studentMapper.getStudentById(classId, studentId);
         if (student != null) {
             int res = studentMapper.changeStudentStatus(classId, studentId, "\"" + status + "\"");
             if (res < 0) {
@@ -127,5 +125,29 @@ public class ServerGetSql {
         } else {
             return true;
         }
+    }
+
+    public static void setStudentPort(int studentId, int port){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        Student student = studentMapper.getStudentById(classId, studentId);
+        int res = studentMapper.setStudentPort(classId, studentId, port);
+        if (port == 0){
+            if (res < 0) {
+                System.out.println(student.getName() + " 解绑端口 " + student.getPort() + " 失败");
+            } else {
+                System.out.println(student.getName() + " 解绑端口 " + student.getPort() + " 成功");
+            }
+        } else {
+            if (res < 0) {
+                System.out.println(student.getName() + " 绑定端口 " + port + " 失败");
+            } else {
+                System.out.println(student.getName() + " 绑定端口 " + port + " 成功");
+            }
+        }
+
+        sqlSession.commit();
+        sqlSession.close();
     }
 }

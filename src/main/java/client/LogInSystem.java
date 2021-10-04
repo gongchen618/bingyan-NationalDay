@@ -6,10 +6,29 @@ import server.sql.Student;
 import java.io.*;
 import java.net.Socket;
 
-import static client.ClientService.getDate;
-public class LogInSystem {
-    public static void LogIn(Socket client) throws IOException {
+import static client.ClientCore.isFlagIsLogIn;
+import static client.ClientCore.setFlagIsLogIn;
 
+public class LogInSystem extends Thread {
+
+    private Socket client;
+
+    public LogInSystem(Socket client) {
+        this.client = client;
+    }
+
+    @Override
+    public void run() {
+        super.run();
+        try {
+            LogIn();
+        } catch (IOException e) {
+            System.out.println("加油");
+            e.printStackTrace();
+        }
+    }
+
+    private void LogIn() throws IOException {
         InputStream in = System.in;
         BufferedReader input = new BufferedReader(new InputStreamReader(in));
 
@@ -25,8 +44,6 @@ public class LogInSystem {
             String echo = socketBufferedReader.readLine();//从教师端读入
         */
 
-        boolean flagConnect = false;
-
         do {
             Student student = new Student();
             System.out.print("请输入学号：");
@@ -39,15 +56,15 @@ public class LogInSystem {
 
             System.out.println(echo);
             if ("Login Successfully".equalsIgnoreCase(echo)) {
-                flagConnect = true;
+                setFlagIsLogIn(true);
                 System.out.println(socketBufferedReader.readLine());
             } else {
                 System.out.println("请重新输入");
             }
-        } while (!flagConnect);
+        } while (!isFlagIsLogIn());
 
         while (true) {
-            System.out.println("[上一次刷新：" + getDate() + "]登录状态：正常");
+            //System.out.println("[上一次刷新：" + getDate() + "]登录状态：正常");
             socketPrintStream.println("");
             try {
                 Thread.sleep(3000);
