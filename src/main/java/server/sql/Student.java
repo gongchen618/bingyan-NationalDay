@@ -7,7 +7,18 @@ public class Student {
     private String name;
     private String password;
     private String status;
-    private int port;
+
+    public String getIdAndName () {
+        return name + "(" + studentId + ") ";
+    }
+
+    public Student(){}
+    public Student(int studentId, String name, String password, String status) {
+        this.studentId = studentId;
+        this.name = name;
+        this.password = password;
+        this.status = status;
+    }
 
     public int getStudentId() {
         return studentId;
@@ -17,9 +28,9 @@ public class Student {
         this.studentId = studentId;
     }
 
-    public String getName() {
+    /*public String getName() {
         return name;
-    }
+    }*/
 
     public void setName(String name) {
         this.name = name;
@@ -39,33 +50,5 @@ public class Student {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public Student() {}
-    public Student(int studentId, String name, String password, String status, int port) {
-        this.studentId = studentId;
-        this.name = name;
-        this.password = password;
-        this.status = status;
-        this.port = port;
-    }
-
-    @Override
-    public String toString() {
-        return "Student{" +
-                "studentId=" + studentId +
-                ", name='" + name + '\'' +
-                ", password='" + password + '\'' +
-                ", status='" + status + '\'' +
-                ", port=" + port +
-                '}';
     }
 }

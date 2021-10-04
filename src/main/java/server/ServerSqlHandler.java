@@ -1,6 +1,7 @@
 package server;
 
 import org.apache.ibatis.session.SqlSession;
+import org.junit.jupiter.api.Test;
 import server.sql.MybatisUtils;
 import server.sql.Student;
 import server.mapper.StudentMapper;
@@ -54,12 +55,12 @@ public class ServerSqlHandler {
         System.out.println("当前班级：" + classId);
         int sumAbsent = 0, sumAll = 0, sumNormal = 0;
         for (Student student : studentList){
-            System.out.println(student.getStudentId() + " " + student.getName() + " " + student.getStatus());
+            System.out.println(student.getIdAndName() + ":" + student.getStatus());
             ++sumAll;
             if (student.getStatus().equalsIgnoreCase("normal")) ++sumNormal;
             if (student.getStatus().equalsIgnoreCase("absent")) ++sumAbsent;
         }
-        System.out.println("应到人数：" + sumAll + "；当前人数：" + (sumAll - sumAbsent)
+        System.out.println("应到人数：" + sumAll + "；正常人数：" + (sumNormal)
                 + "；缺席人数：" + sumAbsent + "；异常人数：" + (sumAll - sumNormal - sumAbsent));
 
         sqlSession.close();
@@ -96,22 +97,14 @@ public class ServerSqlHandler {
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
 
         Student student = studentMapper.getStudentById(classId, studentId);
-        if (student != null) {
-            int res = studentMapper.changeStudentStatus(classId, studentId, "\"" + status + "\"");
-            if (res < 0) {
-                System.out.println(student.getName() + " 状态修改失败，当前状态：" + status);
-            } else {
-                System.out.println(student.getName() + " 状态修改成功，当前状态：" + status);
-            }
-        } else {
-            System.out.println("学生不存在！");
-        }
+        int res = studentMapper.changeStudentStatus(classId, studentId, "\"" + status + "\"");
+        System.out.println(student.getIdAndName() + "状态修改为：" + status);
 
         sqlSession.commit();
         sqlSession.close();
     }
 
-    public static boolean changeStudentPassword(int studentId, String password){
+    public static void changeStudentPassword(int studentId, String password){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
 
@@ -119,14 +112,9 @@ public class ServerSqlHandler {
 
         sqlSession.commit();
         sqlSession.close();
-
-        if (res < 0) {
-            return false;
-        } else {
-            return true;
-        }
     }
 
+    /*
     public static void setStudentPort(int studentId, int port){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
@@ -149,5 +137,18 @@ public class ServerSqlHandler {
 
         sqlSession.commit();
         sqlSession.close();
+    }*/
+
+    public static boolean isTableExist (String table){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        int cnt = studentMapper.isTableExist("\"" + table + "\"");
+
+        sqlSession.commit();
+        sqlSession.close();
+
+        if (cnt == 0) return false;
+        else return true;
     }
 }

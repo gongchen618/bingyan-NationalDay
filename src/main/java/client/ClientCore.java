@@ -19,8 +19,8 @@ public class ClientCore {
         System.out.println("学生端：" + socket.getLocalAddress() + ":" + socket.getLocalPort());
         System.out.println("教师端：" + socket.getInetAddress() + ":" + socket.getPort());
 
-        LogInSystem logInSystem = new LogInSystem(socket);
-        logInSystem.start();
+        TeacherMessageReceiver teacherMessageReceiver = new TeacherMessageReceiver(socket);
+        teacherMessageReceiver.start();
 
         while (!isFlagIsLogIn()) {
             try {
@@ -28,7 +28,7 @@ public class ClientCore {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } //保证其他操作在登录后才能进行
 
         StudentOptionHandler studentOptionHandler = new StudentOptionHandler(socket);
         studentOptionHandler.start();
@@ -39,10 +39,10 @@ public class ClientCore {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } //是不是其实不用多线程的？
 
         socket.close ();
-        System.out.println("学生端已退出");
+        System.out.println("与教师端的连接已断开");
     }
 
     public static boolean isFlagIsLogIn() {
