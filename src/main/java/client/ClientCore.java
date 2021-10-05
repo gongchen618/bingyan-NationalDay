@@ -14,17 +14,16 @@ public class ClientCore {
         //socket.setSoTimeout(3000);
 
         socket.connect(new InetSocketAddress(Inet4Address.getLocalHost(), 8888), 3000);
-        System.out.println(socket);
-        System.out.println("已发起连接");
-        System.out.println("学生端：" + socket.getLocalAddress() + ":" + socket.getLocalPort());
-        System.out.println("教师端：" + socket.getInetAddress() + ":" + socket.getPort());
+        System.out.println("已发起连接 (port:" + socket.getLocalPort() + ")");
+        //System.out.println("学生端：" + socket.getLocalAddress() + ":" + socket.getLocalPort());
+        //System.out.println("教师端：" + socket.getInetAddress() + ":" + socket.getPort());
 
         TeacherMessageReceiver teacherMessageReceiver = new TeacherMessageReceiver(socket);
         teacherMessageReceiver.start();
 
         while (!isFlagIsLogIn()) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -35,7 +34,7 @@ public class ClientCore {
 
         while (isFlagIsLogIn()) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -31,8 +31,11 @@ public class TeacherMessageHandler extends Thread{
             case "Chat":
                 System.out.println(message.getContent());
                 break;
+            case "BroadCast":
+                System.out.println("【广播】@ 老师：" + message.getContent());
+                break;
             case "Answer":
-                System.out.println("【举手】老师回复：" + message.getContent());
+                System.out.println("【私聊】@ 老师：" + message.getContent());
                 break;
             default:
                 System.out.println("[WARN] 传输信息格式错误 " + message);

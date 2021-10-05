@@ -5,6 +5,7 @@ import message.Message;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Map;
 
 import static server.ServerCore.*;
 import static server.ServerSqlHandler.*;
@@ -16,7 +17,7 @@ public class ServerOptionHandler extends Thread {
                 "[Opt1]重置/修改学生状态  " +
                 "[Opt2]标记上课/下课  " +
                 "[Opt3]查看课堂情况  " +
-                "[Opt4]向学生发送消息");
+                "[Opt4]发送消息");
     }
 
     public ServerOptionHandler() {
@@ -45,7 +46,7 @@ public class ServerOptionHandler extends Thread {
                 case "opt0": //修改当前班级
                     System.out.print("请输入新的班级：");
                     str = input.readLine();
-                    if (!isTableExist (str)) {
+                    if (!isTableExist(str)) {
                         System.out.println("该班级不存在！");
                         break;
                     }
@@ -66,8 +67,9 @@ public class ServerOptionHandler extends Thread {
                             System.out.println("请输入新的状态：");
                             str = input.readLine();
                             changeStudentStatus(studentId, str);
-                        } else if (str.equals("opt2")) System.out.println("操作已取消");
-                        else {
+                        } else if (str.equals("opt2")) {
+                            System.out.println("操作已取消");
+                        } else {
                             System.out.println(str + " 操作无效，请重新输入");
                             flag = false;
                         }
@@ -94,18 +96,57 @@ public class ServerOptionHandler extends Thread {
                     printStudentListByOrder();
                     break;
                 case "opt4": //向学生发送消息
-                    System.out.print("请输入目标学生学号：");
-                    int studentId = Integer.parseInt(input.readLine());
-                    Socket socket = getStudentSockets(studentId);
-                    if (socket == null) {
-                        System.out.println("该学生不存在！");
-                    } else {
-                        System.out.print("请输入消息内容：");
-                        str = input.readLine();
+                    for (boolean flag = false; !flag; ) {
+                        System.out.println("[Opt0]向单个学生发送  [Opt1]向全体学生广播  [Opt2]聊天室  [Opt3]取消操作");
 
-                        PrintStream socketOutput = new PrintStream(socket.getOutputStream());//学生输出
-                        socketOutput.println(JSON.toJSONString(new Message("Answer", str)));
-                        System.out.println("消息已发送");
+                        str = input.readLine().toLowerCase();
+                        flag = true;
+
+                        if (str.equals("opt0")) {
+                            System.out.print("请输入目标学生学号：");
+                            int studentId = Integer.parseInt(input.readLine());
+                            Socket socket = getStudentSockets(studentId);
+                            if (socket == null) {
+                                System.out.println("该学生不存在！");
+                            } else {
+                                System.out.print("请输入消息内容：");
+                                str = input.readLine();
+
+                                PrintStream socketOutput = new PrintStream(socket.getOutputStream());//学生输出
+                                socketOutput.println(JSON.toJSONString(new Message("Answer", str)));
+                                System.out.println("消息已发送");
+                            }
+                        } else if (str.equals("opt1")) {
+                            System.out.print("请输入广播消息内容：");
+                            str = input.readLine();
+
+                            Map<Integer, Socket> map = getStudentSockets();
+                            for (Map.Entry<Integer, Socket> entry : map.entrySet()) {
+                                Socket socket = entry.getValue();
+                                PrintStream socketOutput = new PrintStream(socket.getOutputStream());
+                                socketOutput.println(JSON.toJSONString(new Message("BroadCast", str)));
+                            }
+
+                            System.out.println("消息已发送");
+                        } else if (str.equals("opt2")) {
+                            System.out.print("请输入聊天室消息内容：");
+                            str = "【聊天室】@ 老师：" + input.readLine();
+
+                            Map<Integer, Socket> map = getStudentSockets();
+                            for (Map.Entry<Integer, Socket> entry : map.entrySet()) {
+                                Socket socket = entry.getValue();
+                                PrintStream socketOutput = new PrintStream(socket.getOutputStream());
+                                socketOutput.println(JSON.toJSONString(new Message("Chat", str)));
+                            }
+
+                            //System.out.println("消息已发送");
+                            System.out.println(str);
+                        } else if (str.equals("opt3")) {
+                            System.out.println("操作已取消");
+                        } else {
+                            System.out.println(str + " 操作无效，请重新输入");
+                            flag = false;
+                        }
                     }
                     break;
                 default:

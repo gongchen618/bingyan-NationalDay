@@ -63,17 +63,14 @@ public class TeacherMessageReceiver extends Thread {
         String str = null;
         do { //心跳包，以及只有这里会接受教师端的信息
             str = socketBufferedReader.readLine();
-            socketPrintStream.println("");
+            if (str != null) socketPrintStream.println("");
             if (str != null && str.length() > 0) {
                 TeacherMessageHandler teacherMessageHandler = new TeacherMessageHandler(str);
                 teacherMessageHandler.start();
             }
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         } while (str != null);
+
+        setFlagIsLogIn(false);
 
         input.close();
         socketBufferedReader.close();

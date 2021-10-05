@@ -91,12 +91,7 @@ public class StudentMessageReceiver extends Thread{
             if (str != null && str.length() > 0) {
                 StudentMessageHandler studentMessageHandler =
                         new StudentMessageHandler(studentInfo.getStudentId(), str);
-                studentMessageHandler.start();
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e){
-                e.printStackTrace();
+                studentMessageHandler.option();
             }
         } while (str != null);
 

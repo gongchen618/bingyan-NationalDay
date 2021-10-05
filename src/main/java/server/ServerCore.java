@@ -1,5 +1,7 @@
 package server;
 
+import de.scravy.pair.Pair;
+import de.scravy.pair.Pairs;
 import server.sql.Student;
 
 import java.io.*;
@@ -16,6 +18,7 @@ public class ServerCore {
     private static boolean flagIsClassTime = false;
     private static String classId = "class1"; //默认为 class1
     private static Map <Integer, Socket> studentSockets;
+    private static Map <Integer, Pair<FileOutputStream, Integer>> studentFileStreams;
 
     public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(8888);
@@ -30,6 +33,8 @@ public class ServerCore {
 
         //教师端进行对多学生端信息的接收处理
         studentSockets = new HashMap<>();
+        studentFileStreams = new HashMap<>();
+
         for(;;) {
             Socket client = server.accept();
             StudentMessageReceiver studentMessageReceiver = new StudentMessageReceiver(client);
@@ -54,9 +59,26 @@ public class ServerCore {
     public static void setStudentSockets(Integer studentId, Socket socket) {
         if (socket == null) {
             studentSockets.remove(studentId);
-        }
-        else {
+        } else {
             studentSockets.put(studentId, socket);
+        }
+    }
+
+    public static Map<Integer, Pair<FileOutputStream, Integer>> getStudentFileStreams() {
+        return studentFileStreams;
+    }
+    public static Pair<FileOutputStream, Integer> getStudentFileStreams(Integer studentId) {
+        if (studentFileStreams.containsKey(studentId)) {
+            return studentFileStreams.get(studentId);
+        } else {
+            return null;
+        }
+    }
+    public static void setStudentFileStreams(Integer studentId, FileOutputStream fileOutputStream, Integer length) {
+        if (fileOutputStream == null) {
+            studentFileStreams.remove (studentId);
+        } else {
+            studentFileStreams.put (studentId, Pairs.from(fileOutputStream, length));
         }
     }
 }
