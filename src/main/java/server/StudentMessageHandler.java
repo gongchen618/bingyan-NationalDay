@@ -9,12 +9,13 @@ import server.sql.Student;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Map;
 
 import static server.ServerCore.*;
-import static server.ServerSqlHandler.changeStudentPassword;
-import static server.ServerSqlHandler.getStudentById;
+import static server.ServerSqlHandler.*;
 
 public class StudentMessageHandler {
     private int studentId;
@@ -52,7 +53,7 @@ public class StudentMessageHandler {
             case "Document":
                 Pair<FileOutputStream, Integer> fileInfo = getStudentFileStreams(studentId);
                 if (fileInfo == null) {
-                    String path = "UploadFromStudents/" + studentId + "_" + message.getContent();
+                    String path = getStudentFileDirectory() + "/StudentsDocuments/" + studentId + "_" + message.getContent();
 
                     File file = new File(path);
                     File fileParent = file.getParentFile();
@@ -86,6 +87,52 @@ public class StudentMessageHandler {
                     }
                 }
                 break;
+            case "Monitor":
+                Pair<FileOutputStream, Integer> monitorInfo = getStudentMonitorStreams(studentId);
+                if (monitorInfo == null) {
+
+                    SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");//设置日期格式
+                    String path = getStudentFileDirectory() + "/MonitorShots/" + studentId + "_" + df.format(new Date ()) + ".png";
+
+                    File file = new File(path);
+                    File fileParent = file.getParentFile();
+                    if (!fileParent.exists()) fileParent.mkdirs();
+                    if (file.exists()) file.delete();
+                    file.createNewFile();//有路径才能创建文件
+
+                    FileOutputStream fileOutputStream = new FileOutputStream(path);
+                    setStudentMonitorStreams(studentId, fileOutputStream, null);
+
+                    InputStream in = System.in;
+                    BufferedReader input = new BufferedReader(new InputStreamReader(in));//从键盘读入
+
+                } else if (monitorInfo.getSecond() == null) {
+                    setStudentMonitorStreams(studentId, monitorInfo.getFirst(), Integer.parseInt(message.getContent()));
+                } else {
+                    FileOutputStream fileOutputStream = monitorInfo.getFirst();
+                    Integer length = monitorInfo.getSecond();
+
+                    byte[] buff = Base64.getDecoder().decode(message.getContent());
+                    length -= buff.length;
+
+                    fileOutputStream.write(buff, 0, buff.length);
+                    if (length == 0) {
+                        fileOutputStream.flush();
+                        fileOutputStream.close();
+                        setStudentMonitorStreams(studentId, null, null);
+                        System.out.println(student.getIdAndName() + "的屏幕截图已保存");
+                    } else {
+                        setStudentMonitorStreams(studentId, fileOutputStream, length);
+                    }
+                }
+                break;
+            case "Warn":
+                int screenStaticTime = Integer.parseInt(message.getContent());
+                changeStudentScreenStaticTime(studentId, screenStaticTime);
+                if (screenStaticTime >= 3 && (screenStaticTime - 3) % 5 == 0) { //每 5 分钟是一个节点
+                    System.out.println("[提示]" + student.getIdAndName() + "的屏幕已有 "
+                            + screenStaticTime + " 分钟没有变化");
+                }
             default:
                 System.out.println("[WARN] 传输信息格式错误 " + message);
         }

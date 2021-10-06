@@ -22,30 +22,33 @@ public class StudentMessageReceiver extends Thread{
     @Override
     public void run() {
         super.run();
-
-        System.out.println("新学生端启动：" + socket.getInetAddress() + ":" + socket.getPort());
+        //System.out.println("新学生端启动：" + socket.getInetAddress() + ":" + socket.getPort());
         try {
             option();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("学生端连接异常断开："+ socket.getInetAddress() + ":" + socket.getPort());
+            //e.printStackTrace();
+            System.out.println(studentInfo.getIdAndName() + " 的连接断开"); //其实也可能不是异常
+            //System.out.println("学生端连接异常断开："+ socket.getInetAddress() + ":" + socket.getPort());
         }
 
         try {
             setStudentSockets(studentInfo.getStudentId(), null);
             socket.close();
-            System.out.println("学生端断开："+ socket.getInetAddress() + ":" + socket.getPort());
+            //System.out.println("学生端断开："+ socket.getInetAddress() + ":" + socket.getPort());
 
             if (studentInfo != null) {
-                System.out.println(studentInfo.getIdAndName() + "已下线");
-                if (isFlagIsClassTime() == true) {
-                    changeStudentStatus(studentInfo.getStudentId(), "LeaveEarly");//这里可能有点问题
-                }
+                changeStudentStatus(studentInfo.getStudentId(), "Offline");
+                studentInfo = getStudentById(studentInfo.getStudentId()); //更新一下
+
+                if (getClassTime() == 0) {
+                    changeStudentPerformance(studentInfo.getStudentId(), "缺席");
+                } else if (getClassTime() == 1) { //这里默认不存在早退 + 迟到的状态...
+                        changeStudentPerformance(studentInfo.getStudentId(), "早退");
+                };//2: 状态不变
             }
         } catch (IOException e){
             e.printStackTrace();
         }
-
     }
 
     private void option() throws IOException {
@@ -58,29 +61,33 @@ public class StudentMessageReceiver extends Thread{
         do {//学生端登录
 
             try {
-                String str = socketInput.readLine(), password = socketInput.readLine();
+                String str = socketInput.readLine();
+                String password = socketInput.readLine();
+
                 int studentId = Integer.parseInt(str);
                 studentInfo = getStudentById(studentId);
 
                 if (studentInfo == null) {
-                    socketOutput.println("[F]学号不存在！");
+                    socketOutput.println("学号不存在！");
                 } else if (studentInfo.getPassword().equals(password)) {
                     flagConnect = true;
-                    System.out.println(studentInfo.getIdAndName() + "已上线");
                     setStudentSockets(studentInfo.getStudentId(), socket);
+                    changeStudentStatus(studentId, "Online");
 
-                    if (isFlagIsClassTime() == true) {
-                        changeStudentStatus(studentId, "Late");
-                        socketOutput.println("[T]登录成功！但是迟到了");
+                    if (getClassTime() == 0) {
+                        changeStudentPerformance(studentId, "正常");
+                        socketOutput.println("登录成功！课程未开始，请不要登出");
+                    } else if (getClassTime() == 1) {
+                        changeStudentPerformance(studentId, "迟到");
+                        socketOutput.println("登录成功！课程已经开始，你迟到了");
                     } else {
-                        changeStudentStatus(studentId, "Normal");
-                        socketOutput.println("[T]登录成功！");
+                        socketOutput.println("登录成功！课程已结束，状态不再更新");
                     }
                 } else {
-                    socketOutput.println("[F]密码错误！");
+                    socketOutput.println("密码错误！");
                 }
             } catch (Exception e){
-                socketOutput.println("[F]非法输入！");
+                socketOutput.println("非法输入！");
             }
         } while (!flagConnect);
 

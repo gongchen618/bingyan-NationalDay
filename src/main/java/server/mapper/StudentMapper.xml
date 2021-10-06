@@ -9,16 +9,28 @@
         select * from ${table}
     </select>
 
-    <update id="resetStatus" statementType="STATEMENT">
-        update ${table} set status = "Absent"
+    <update id="resetPerfomance" statementType="STATEMENT">
+        update ${table} set performance = "缺席"
     </update>
-    
+
+    <update id="resetScreenStaticTime" statementType="STATEMENT">
+        update ${table} set SST = 0
+    </update>
+
     <select id="getStudentById" resultType="server.sql.Student" statementType="STATEMENT">
         select * from ${table} where studentId = ${studentId}
     </select>
 
+    <update id="changeStudentPerformance" statementType="STATEMENT">
+        update ${table} set performance=${performance} where studentId = ${studentId}
+    </update>
+
     <update id="changeStudentStatus" statementType="STATEMENT">
         update ${table} set status=${status} where studentId = ${studentId}
+    </update>
+
+    <update id="changeStudentScreenStaticTime" statementType="STATEMENT">
+        update ${table} set SST=${SST} where studentId = ${studentId}
     </update>
 
     <update id="changeStudentPassword" statementType="STATEMENT">
@@ -27,5 +39,41 @@
 
     <select id="isTableExist" resultType="int" statementType="STATEMENT">
         select count(*) from information_schema.TABLES where table_name = ${table}
+    </select>
+
+    <select id="getTableNameList" resultType="String">
+        SELECT table_name from INFORMATION_SCHEMA.tables where table_schema=(select database())
+    </select>
+
+    <select id="deleteOldTable" statementType="STATEMENT" resultType="Integer">
+        DROP TABLE IF EXISTS ${name};
+    </select>
+
+    <select id="createNewTable" statementType="STATEMENT" resultType="Integer">
+        CREATE TABLE ${name} (
+            `studentId` int(11) NOT NULL DEFAULT '0',
+            `name` varchar(255) NOT NULL DEFAULT 'defaultUser',
+            `password` varchar(255) NOT NULL DEFAULT '123456',
+            `status` varchar(255) NOT NULL DEFAULT 'Offline',
+            `performance` varchar(255) NOT NULL DEFAULT '缺席',
+            `SST` int(11) NOT NULL DEFAULT '0',
+            PRIMARY KEY (`studentId`) USING BTREE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    </select>
+
+    <select id="insertNewStudents" statementType="STATEMENT" resultType="Integer">
+        INSERT INTO ${table} VALUES
+        <foreach collection ="list" item="student" separator =",">
+            (${student.studentId}, ${student.name}, default, default, default, default)
+        </foreach >
+
+    </select>
+
+    <select id="isColumnExist" statementType="STATEMENT" resultType="int">
+        select count(*) from information_schema.columns where table_name = ${table} and column_name = ${testName}
+    </select>
+
+    <select id="createNewColumn" statementType="STATEMENT" resultType="Integer">
+        ALTER TABLE ${table} ADD COLUMN ${testName} int(11) NOT NULL DEFAULT '0';
     </select>
 </mapper>

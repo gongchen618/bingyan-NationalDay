@@ -76,9 +76,9 @@ public class StudentOptionHandler extends Thread {
                     System.out.println("消息已发出");
                     break;
                 case "opt4"://向老师发送文件
-                    String addr = new File("").getCanonicalPath();
+                    String addr = new File("").getCanonicalPath() + "/";
                     System.out.println("[提示]需要发送的文件应放置在：" + addr);
-                    System.out.print("请输入文件名字(可包含子文件夹地址)：");
+                    System.out.print("请输入文件名字(可包含子文件夹路径)：");
 
                     str = input.readLine();
                     File file = new File(addr + str);
@@ -86,7 +86,7 @@ public class StudentOptionHandler extends Thread {
                         FileInputStream fileInputStream = new FileInputStream(str);
 
                         byte[] buff = new byte[2048];
-                        socketPrintStream.println(JSON.toJSONString(new Message("Document", str)));
+                        socketPrintStream.println(JSON.toJSONString(new Message("Document", file.getName())));
                         socketPrintStream.println(JSON.toJSONString(new Message("Document", String.valueOf(file.length()))));
 
                         int length = 0;

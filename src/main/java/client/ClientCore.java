@@ -8,6 +8,7 @@ import java.net.Socket;
 public class ClientCore {
 
     private static boolean flagIsLogIn = false;
+    private static int screenStaticTime = 0;
 
     public static void main(String[] args) throws IOException {
         Socket socket = new Socket();
@@ -32,6 +33,9 @@ public class ClientCore {
         StudentOptionHandler studentOptionHandler = new StudentOptionHandler(socket);
         studentOptionHandler.start();
 
+        ScreenStaticTimeAutoMachine screenStaticTimeAutoMachine = new ScreenStaticTimeAutoMachine(socket);
+        screenStaticTimeAutoMachine.start();
+
         while (isFlagIsLogIn()) {
             try {
                 Thread.sleep(1000);
@@ -41,7 +45,7 @@ public class ClientCore {
         } //是不是其实不用多线程的？
 
         socket.close ();
-        System.out.println("与教师端的连接已断开");
+        System.out.println("已下线");
     }
 
     public static boolean isFlagIsLogIn() {
@@ -49,5 +53,12 @@ public class ClientCore {
     }
     public static void setFlagIsLogIn(boolean flag) {
         flagIsLogIn = flag;
+    }
+
+    public static int getScreenStaticTime() {
+        return screenStaticTime;
+    }
+    public static void setScreenStaticTime(int screenStaticTime) {
+        ClientCore.screenStaticTime = screenStaticTime;
     }
 }

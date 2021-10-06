@@ -24,7 +24,8 @@ public class TeacherMessageReceiver extends Thread {
         try {
             LogIn();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.out.println("与教师端的连接断开");
         }
     }
 
@@ -53,7 +54,7 @@ public class TeacherMessageReceiver extends Thread {
 
             String echo = socketBufferedReader.readLine();
             System.out.println(echo);
-            if (echo.charAt (1) == 'T') {
+            if (echo.indexOf("登录成功") != -1) {
                 setFlagIsLogIn(true);
             } else {
                 System.out.println("请重新输入");
@@ -65,7 +66,7 @@ public class TeacherMessageReceiver extends Thread {
             str = socketBufferedReader.readLine();
             if (str != null) socketPrintStream.println("");
             if (str != null && str.length() > 0) {
-                TeacherMessageHandler teacherMessageHandler = new TeacherMessageHandler(str);
+                TeacherMessageHandler teacherMessageHandler = new TeacherMessageHandler(str, client);
                 teacherMessageHandler.start();
             }
         } while (str != null);
