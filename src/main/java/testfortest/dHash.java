@@ -84,8 +84,8 @@ public class dHash {
 
     //DHashUtil 参数值为待处理文件夹
     public static void main(String[] args) {
-        File file1 = new File("screenshot1.png");
-        File file2 = new File("screenshot0.png");
+        File file1 = new File("1.png");
+        File file2 = new File("12.png");
 
         System.out.println("图片1hash值："+getDHash(file1));
         System.out.println("图片2hash值："+getDHash(file2));

@@ -1,7 +1,5 @@
 package server.sql;
 
-import org.json.JSONObject;
-
 public class Student {
     private int studentId;
     private String name;

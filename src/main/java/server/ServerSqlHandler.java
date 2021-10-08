@@ -1,14 +1,14 @@
 package server;
 
 import org.apache.ibatis.session.SqlSession;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import server.sql.MybatisUtils;
 import server.sql.Student;
 import server.mapper.StudentMapper;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import static java.lang.Math.max;
 import static server.ServerCore.getClassId;
@@ -30,22 +30,10 @@ public class ServerSqlHandler {
         sqlSession.close();
     }
 
-    public static void printStudentList(){
-        SqlSession sqlSession = MybatisUtils.getSqlSession();
-        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
-        List<Student> studentList = studentMapper.getStudentList(getClassId());
-
-        for (Student student : studentList){
-            System.out.println(student);
-        }
-
-        sqlSession.close();
-    }
-
     public static void printStudentListByOrder(){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
-        List<Student> studentList = studentMapper.getStudentList(getClassId());
+        List<Student> studentList = studentMapper.getAllExceptTest(getClassId());
 
         int maxNameLen = 0;
         for (Student student : studentList) maxNameLen = max (maxNameLen, student.getIdAndName().length());
@@ -71,38 +59,8 @@ public class ServerSqlHandler {
 
         sqlSession.close();
     }
-
-    public static void resetPerfomance(){
-        SqlSession sqlSession = MybatisUtils.getSqlSession();
-        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
-
-        int res = studentMapper.resetPerfomance(getClassId());
-        if (res > 0) {
-            System.out.println ("已重置所有学生状态为 \"缺席\"");
-        } else {
-            System.out.println ("学生状态重置失败!");
-        }
-
-        sqlSession.commit();
-        sqlSession.close();
-    }
-
-    public static void resetScreenStaticTime(){
-        SqlSession sqlSession = MybatisUtils.getSqlSession();
-        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
-
-        int res = studentMapper.resetScreenStaticTime(getClassId());
-        if (res > 0) {
-            System.out.println ("已重置所有学生的屏幕静止时间");
-        } else {
-            System.out.println ("学生状态重置失败!");
-        }
-
-        sqlSession.commit();
-        sqlSession.close();
-    }
-
     public static Student getStudentById(int studentId){
+
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
 
@@ -113,46 +71,18 @@ public class ServerSqlHandler {
         return student;
     }
 
-    public static void changeStudentPerformance(int studentId, String performance){
+    public static void setCell(int studentId, String columnName, String val){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
 
-        Student student = studentMapper.getStudentById(getClassId(), studentId);
-        int res = studentMapper.changeStudentPerformance(getClassId(), studentId, "\"" + performance + "\"");
-        System.out.println(student.getIdAndName() + "状态更新为：" + performance);
-
-        sqlSession.commit();
-        sqlSession.close();
-    }
-
-    public static void changeStudentStatus (int studentId, String status){
-        SqlSession sqlSession = MybatisUtils.getSqlSession();
-        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
-
-        Student student = studentMapper.getStudentById(getClassId(), studentId);
-        int res = studentMapper.changeStudentStatus(getClassId(), studentId, "\"" + status + "\"");
-        if (status.equals("Online")) System.out.println(student.getIdAndName() + "已上线");
-        else System.out.println(student.getIdAndName() + "已离线");
-
-        sqlSession.commit();
-        sqlSession.close();
-    }
-
-    public static void changeStudentScreenStaticTime(int studentId, int SST){
-        SqlSession sqlSession = MybatisUtils.getSqlSession();
-        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
-
-        int res = studentMapper.changeStudentScreenStaticTime(getClassId(), studentId, SST);
-
-        sqlSession.commit();
-        sqlSession.close();
-    }
-
-    public static void changeStudentPassword(int studentId, String password){
-        SqlSession sqlSession = MybatisUtils.getSqlSession();
-        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
-
-        int res = studentMapper.changeStudentPassword(getClassId(), studentId, "\"" + password + "\"");
+        Student student = getStudentById(studentId);
+        int res = studentMapper.setCell(getClassId(), studentId, "`" + columnName + "`", "\"" + val + "\"");
+        if (columnName.equals("status")){
+            if (val.equals("Online")) System.out.println(student.getIdAndName() + "已上线");
+            else System.out.println(student.getIdAndName() + "已离线");
+        } else if (columnName.equals("performance")){
+            System.out.println(student.getIdAndName() + "状态更新为：" + val);
+        }
 
         sqlSession.commit();
         sqlSession.close();
@@ -219,18 +149,163 @@ public class ServerSqlHandler {
         sqlSession.close();
     }
 
+    public static boolean isTestExist (String test) {
+        if (test.equals("studentId")) return false;
+        if (test.equals("password")) return false;
+        if (test.equals("name")) return false;
+        if (test.equals("SST")) return false;
+        if (test.equals("status")) return false;
+        if (test.equals("performance")) return false;
+
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        int res = studentMapper.isColumnExist("\"" + getClassId() + "\"", "\"" + test + "\"");
+
+        sqlSession.commit();
+        sqlSession.close();
+
+        if (res > 0) return true;
+        else return false;
+    }
+
     public static void createNewTest (String testName){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
 
-        if (studentMapper.isColumnExist("\'class3\'", "\'" + testName + "\'") > 0) {
-            System.out.println("测试 " + testName + " 创建失败！当前班级已存在同名测试");
-        } else {
-            Integer res = studentMapper.createNewColumn("`class3`", "`" + testName + "`");
-            System.out.println("测试 " + testName + " 创建成功！");
-        }
+        Integer res = studentMapper.createNewColumn(getClassId(), "`" + testName + "`");
+        System.out.println("测试 " + testName + " 创建成功！");
 
         sqlSession.commit();
         sqlSession.close();
+    }
+
+    public static boolean isStudentExist (int studentId) {
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        int res = studentMapper.isStudentExist("`" + getClassId() + "`", studentId);
+
+        sqlSession.commit();
+        sqlSession.close();
+
+        if (res > 0) return true;
+        else return false;
+    }
+
+    public static void deleteStudent (int studentId){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        Integer res = studentMapper.deleteStudent ("`" + getClassId() + "`", studentId);
+
+        sqlSession.commit();
+        sqlSession.close();
+    }
+
+    public static boolean printTestNameList () {
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        List<String> list = studentMapper.getTestNameList("\"" + getClassId() + "\"");
+        if (list.size() == 6) {
+            System.out.println("当前没有测试！");
+            return false;
+        }
+
+        System.out.println("当前存在的测试有：");
+        for (String test : list) {
+            if (test.equals("studentId")) continue;
+            if (test.equals("password")) continue;
+            if (test.equals("name")) continue;
+            if (test.equals("SST")) continue;
+            if (test.equals("status")) continue;
+            if (test.equals("performance")) continue;
+
+            System.out.print (test + "  ");
+        }
+        System.out.println("");
+
+        sqlSession.commit();
+        sqlSession.close();
+
+        return true;
+    }
+
+    public static void printStudentTestList (int studentId){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        Map<String, Object> map = studentMapper.getStudentTestList("`" + getClassId() + "`", studentId);
+
+        System.out.println(getStudentById(studentId).getIdAndName() + "的各次测试成绩如下：");
+        for (Entry<String, Object> s : map.entrySet()) {
+            if (s.getKey().equals("studentId")) continue;
+            if (s.getKey().equals("password")) continue;
+            if (s.getKey().equals("name")) continue;
+            if (s.getKey().equals("SST")) continue;
+            if (s.getKey().equals("status")) continue;
+            if (s.getKey().equals("performance")) continue;
+
+            System.out.print("[" + s.getKey() + "]:" + s.getValue() + "  ");
+        }
+        System.out.println("");
+
+        sqlSession.commit();
+        sqlSession.close();
+    }
+
+    public static void resetColumn (String columnName) {
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        int res = 0;
+        if (columnName.equals("SST")) {
+            res = studentMapper.resetColumn("`" + getClassId() + "`", "`" + columnName + "`", "\"0\"");
+            if (res > 0) System.out.println ("已重置所有学生的屏幕静止时间");
+        } else if (columnName.equals("performance")){
+            res = studentMapper.resetColumn("`" + getClassId() + "`", "`" + columnName + "`", "\"缺席\"");
+            System.out.println ("已重置所有学生状态为 \"缺席\"");
+        } else {
+            System.out.println("出现了意外的状态重置请求！");
+        }
+        if (res <= 0) System.out.println("学生状态重置失败！");
+
+        sqlSession.commit();
+        sqlSession.close();
+    }
+
+    public static Object getCell (String columnName, int studentId){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        Object val = studentMapper.getCell ("`" + getClassId() + "`", studentId, "`" + columnName + "`");
+
+        sqlSession.commit();
+        sqlSession.close();
+
+        return val;
+    }
+
+    public static void deleteColumn (String columnName) {
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        studentMapper.deleteColumn ("`" + getClassId() + "`", "`" + columnName + "`");
+
+        sqlSession.commit();
+        sqlSession.close();
+    }
+
+    public static List<String> getColumn (String columnName){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        StudentMapper studentMapper = sqlSession.getMapper(StudentMapper.class);
+
+        List<String> list = studentMapper.getColumn ("`" + getClassId() + "`", "`" + columnName + "`");
+
+        sqlSession.commit();
+        sqlSession.close();
+
+        return list;
     }
 }

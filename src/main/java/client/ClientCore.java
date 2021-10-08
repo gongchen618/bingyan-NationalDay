@@ -4,14 +4,22 @@ import java.io.*;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+
+import de.scravy.pair.Pair;
+import de.scravy.pair.Pairs;
 
 public class ClientCore {
 
     private static boolean flagIsLogIn = false;
     private static int screenStaticTime = 0;
+    private static Pair <FileOutputStream, Integer> fileFromTeacher = null;
+    private static Map<String, Boolean> fileType = new HashMap<>(); //0客观 1主观
 
     public static void main(String[] args) throws IOException {
         Socket socket = new Socket();
+
         //socket.setSoTimeout(3000);
 
         socket.connect(new InetSocketAddress(Inet4Address.getLocalHost(), 8888), 3000);
@@ -60,5 +68,24 @@ public class ClientCore {
     }
     public static void setScreenStaticTime(int screenStaticTime) {
         ClientCore.screenStaticTime = screenStaticTime;
+    }
+
+    public static Pair<FileOutputStream, Integer> getFileFromTeacher() {
+        return fileFromTeacher;
+    }
+    public static void setFileFromTeacher(FileOutputStream fileOutputStream, Integer integer) {
+        if (fileOutputStream == null) fileFromTeacher = null;
+        else fileFromTeacher = Pairs.from(fileOutputStream, integer);
+    }
+
+    public static Map<String, Boolean> getFileType () {
+        return fileType;
+    }
+    public static boolean getFileType (String file) {
+        return fileType.get(file);
+    }
+    public static void setFileType (String file, Boolean type){
+        if (type == null) fileType.remove(file);
+        else fileType.put(file, type);
     }
 }

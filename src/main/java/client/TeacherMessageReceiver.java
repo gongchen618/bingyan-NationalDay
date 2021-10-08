@@ -23,13 +23,13 @@ public class TeacherMessageReceiver extends Thread {
         super.run();
         try {
             LogIn();
-        } catch (IOException e) {
+        } catch (Exception e) {
             //e.printStackTrace();
             System.out.println("与教师端的连接断开");
         }
     }
 
-    private void LogIn() throws IOException {
+    private void LogIn() throws Exception {
         InputStream in = System.in;
         BufferedReader input = new BufferedReader(new InputStreamReader(in));
 
@@ -67,7 +67,7 @@ public class TeacherMessageReceiver extends Thread {
             if (str != null) socketPrintStream.println("");
             if (str != null && str.length() > 0) {
                 TeacherMessageHandler teacherMessageHandler = new TeacherMessageHandler(str, client);
-                teacherMessageHandler.start();
+                teacherMessageHandler.option();
             }
         } while (str != null);
 

@@ -27,7 +27,7 @@ public class StudentMessageReceiver extends Thread{
             option();
         } catch (IOException e) {
             //e.printStackTrace();
-            System.out.println(studentInfo.getIdAndName() + " 的连接断开"); //其实也可能不是异常
+            System.out.println(studentInfo.getIdAndName() + "的连接断开"); //其实也可能不是异常
             //System.out.println("学生端连接异常断开："+ socket.getInetAddress() + ":" + socket.getPort());
         }
 
@@ -37,13 +37,13 @@ public class StudentMessageReceiver extends Thread{
             //System.out.println("学生端断开："+ socket.getInetAddress() + ":" + socket.getPort());
 
             if (studentInfo != null) {
-                changeStudentStatus(studentInfo.getStudentId(), "Offline");
+                setCell(studentInfo.getStudentId(), "status", "Offline");
                 studentInfo = getStudentById(studentInfo.getStudentId()); //更新一下
 
                 if (getClassTime() == 0) {
-                    changeStudentPerformance(studentInfo.getStudentId(), "缺席");
+                    setCell (studentInfo.getStudentId(), "performance", "缺席");
                 } else if (getClassTime() == 1) { //这里默认不存在早退 + 迟到的状态...
-                        changeStudentPerformance(studentInfo.getStudentId(), "早退");
+                        setCell (studentInfo.getStudentId(), "performance","早退");
                 };//2: 状态不变
             }
         } catch (IOException e){
@@ -59,7 +59,6 @@ public class StudentMessageReceiver extends Thread{
         boolean flagConnect = false;
 
         do {//学生端登录
-
             try {
                 String str = socketInput.readLine();
                 String password = socketInput.readLine();
@@ -72,13 +71,13 @@ public class StudentMessageReceiver extends Thread{
                 } else if (studentInfo.getPassword().equals(password)) {
                     flagConnect = true;
                     setStudentSockets(studentInfo.getStudentId(), socket);
-                    changeStudentStatus(studentId, "Online");
+                    setCell (studentId, "status", "Online");
 
                     if (getClassTime() == 0) {
-                        changeStudentPerformance(studentId, "正常");
+                        setCell (studentId,"performance", "正常");
                         socketOutput.println("登录成功！课程未开始，请不要登出");
                     } else if (getClassTime() == 1) {
-                        changeStudentPerformance(studentId, "迟到");
+                        setCell (studentId, "performance", "迟到");
                         socketOutput.println("登录成功！课程已经开始，你迟到了");
                     } else {
                         socketOutput.println("登录成功！课程已结束，状态不再更新");

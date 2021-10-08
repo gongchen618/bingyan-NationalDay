@@ -5,36 +5,20 @@
 
 <mapper namespace="server.mapper.StudentMapper">
     
-    <select id="getStudentList" resultType="server.sql.Student" statementType="STATEMENT">
+    <select id="getAllExceptTest" resultType="server.sql.Student" statementType="STATEMENT">
         select * from ${table}
     </select>
 
-    <update id="resetPerfomance" statementType="STATEMENT">
-        update ${table} set performance = "缺席"
-    </update>
-
-    <update id="resetScreenStaticTime" statementType="STATEMENT">
-        update ${table} set SST = 0
+    <update id="resetColumn" statementType="STATEMENT">
+        update ${table} set ${column} = ${val}
     </update>
 
     <select id="getStudentById" resultType="server.sql.Student" statementType="STATEMENT">
         select * from ${table} where studentId = ${studentId}
     </select>
 
-    <update id="changeStudentPerformance" statementType="STATEMENT">
-        update ${table} set performance=${performance} where studentId = ${studentId}
-    </update>
-
-    <update id="changeStudentStatus" statementType="STATEMENT">
-        update ${table} set status=${status} where studentId = ${studentId}
-    </update>
-
-    <update id="changeStudentScreenStaticTime" statementType="STATEMENT">
-        update ${table} set SST=${SST} where studentId = ${studentId}
-    </update>
-
-    <update id="changeStudentPassword" statementType="STATEMENT">
-        update ${table} set password=${password} where studentId = ${studentId}
+    <update id="setCell" statementType="STATEMENT">
+        update ${table} set ${column}=${val} where studentId = ${studentId}
     </update>
 
     <select id="isTableExist" resultType="int" statementType="STATEMENT">
@@ -47,6 +31,10 @@
 
     <select id="deleteOldTable" statementType="STATEMENT" resultType="Integer">
         DROP TABLE IF EXISTS ${name};
+    </select>
+
+    <select id="deleteColumn" statementType="STATEMENT">
+        ALTER TABLE ${table} DROP COLUMN ${column}
     </select>
 
     <select id="createNewTable" statementType="STATEMENT" resultType="Integer">
@@ -70,10 +58,35 @@
     </select>
 
     <select id="isColumnExist" statementType="STATEMENT" resultType="int">
-        select count(*) from information_schema.columns where table_name = ${table} and column_name = ${testName}
+        select count(*) from information_schema.columns where table_name = ${table} and column_name = ${column}
     </select>
 
     <select id="createNewColumn" statementType="STATEMENT" resultType="Integer">
-        ALTER TABLE ${table} ADD COLUMN ${testName} int(11) NOT NULL DEFAULT '0';
+        ALTER TABLE ${table} ADD COLUMN ${column} int(11) DEFAULT NULL;
     </select>
+
+    <select id="isStudentExist" statementType="STATEMENT" resultType="int">
+        select count(*) from ${table} where studentId = ${studentId};
+    </select>
+
+    <select id="deleteStudent" statementType="STATEMENT" resultType="Integer">
+        delete from ${table} where studentId = ${studentId};
+    </select>
+
+    <select id="getStudentTestList" resultType="Map" statementType="STATEMENT" >
+        SELECT * from ${table} where studentId=${studentId};
+    </select>
+
+    <select id="getTestNameList" resultType="String" parameterType="String" statementType="STATEMENT" >
+        select COLUMN_NAME from information_schema.COLUMNS where table_name = ${table}
+    </select>
+
+    <select id="getColumn" resultType="String" parameterType="String" statementType="STATEMENT" >
+        select ${column} from ${table}
+    </select>
+
+    <select id="getCell" resultType="Object" statementType="STATEMENT">
+        select ${column} from ${table} where studentId = ${studentId}
+    </select>
+
 </mapper>

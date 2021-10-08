@@ -20,17 +20,23 @@ public class ServerCore {
     private static Map <Integer, Socket> studentSockets;
     private static Map <Integer, Pair<FileOutputStream, Integer>> studentFileStreams;
     private static Map <Integer, Pair<FileOutputStream, Integer>> studentMonitorStreams;
+    private static Map <Integer, String> studentTestNames;
+    private static Map<String, Boolean> fileType; //0客观 1主观
     private static String studentFileDirectory;
 
     public static void main(String[] args) throws IOException {
-        ServerSocket server = new ServerSocket(8888);
+        ServerSocket server = null;
+        try {
+            server = new ServerSocket(8888);
+        } catch (Exception e){
+            System.out.println("端口绑定失败！");
+        }
 
         System.out.println("教师端已启动");
         //System.out.println("教师端：" + server.getInetAddress() + ":" + server.getLocalPort());
 
         //教师端开始接受操作
         setClassId("class1"); //这时有多个重置操作发生了
-        setStudentFileDirectory(new File("").getCanonicalPath());
 
         ServerOptionHandler serverOptionHandler = new ServerOptionHandler();
         serverOptionHandler.start();
@@ -39,6 +45,8 @@ public class ServerCore {
         studentSockets = new HashMap<>();
         studentFileStreams = new HashMap<>();
         studentMonitorStreams = new HashMap<>();
+        studentTestNames = new HashMap<>();
+        fileType = new HashMap<>();
 
         for(;;) {
             Socket client = server.accept();
@@ -54,9 +62,14 @@ public class ServerCore {
     public static void setClassId(String Id) {
         classId = Id;
         System.out.println("当前班级：" + classId);
-        resetPerfomance(); //状态重置为 "缺席"
+        resetColumn("performance");//状态重置为 "缺席"
         setClassTime(0); //标记课堂尚未开始
-        resetScreenStaticTime(); //屏幕静止时间重置为 0
+        resetColumn("SST");//屏幕静止时间重置为 0
+        try {
+            setStudentFileDirectory(new File("").getCanonicalPath() + "/" + classId);//设置文件路径
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static int getClassTime() {
@@ -130,5 +143,31 @@ public class ServerCore {
         File file = new File(studentFileDirectory);
         if (!file.exists()) file.mkdirs();
         System.out.println("当前接收文件夹路径：" + getStudentFileDirectory());
+    }
+
+    public static Map<Integer, String> getStudentTestNames() {
+        return studentTestNames;
+    }
+    public static String getStudentTestNames(int studentId) {
+        return studentTestNames.get(studentId);
+    }
+    public static void setStudentTestNames(int studentId, String testName) {
+        if (testName == null) {
+            studentTestNames.remove (studentId);
+        } else {
+            studentTestNames.put (studentId, testName);
+        }
+    }
+
+    public static Map<String, Boolean> getFileType () {
+        return fileType;
+    }
+    public static Object getFileType (String file) {
+        if (fileType.containsValue(file)) return fileType.get(file);
+        else return null;
+    }
+    public static void setFileType (String file, Boolean type){
+        if (type == null) fileType.remove(file);
+        else fileType.put(file, type);
     }
 }

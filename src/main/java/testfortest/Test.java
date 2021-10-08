@@ -28,10 +28,6 @@ public class Test extends JFrame {
     private Robot robot = null;
 
     public Test() {
-        int studentId = 0;
-        Scanner scanner = new Scanner(System.in);
-        System.out.println(scanner.hasNextInt());
-        studentId = scanner.nextInt();
-        System.out.println(studentId);
+        String str = "asdsad_12_31.jpg";
     }
 }
